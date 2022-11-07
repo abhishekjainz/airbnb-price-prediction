@@ -3,7 +3,7 @@
 
 # ## Import Packages
 
-# In[1]:
+# In[2]:
 
 
 import pandas as pd
@@ -18,10 +18,10 @@ sns.set_theme(font_scale=1.5, style="darkgrid")
 
 # ## Read Data
 
-# In[2]:
+# In[3]:
 
 
-# Read indivual s
+# Read indivual scripts
 sd_listings = pd.read_csv('./Data/Listings/san_diego_listings.csv')
 oakland_listings = pd.read_csv('./Data/Listings/oakland_listings.csv')
 la_listings = pd.read_csv('./Data/Listings/los_angeles_listings.csv')
@@ -31,6 +31,7 @@ smc_listings = pd.read_csv('./Data/Listings/san_mateo_county_listings.csv')
 sc_listings = pd.read_csv('./Data/Listings/santa_cruz_county_listings.csv')
 pg_listings = pd.read_csv('./Data/Listings/pacific_grove_listings.csv')
 
+#listings are split by states, so we should combine them while keeping
 listings = [sd_listings, oakland_listings, la_listings, sf_listings, scc_listings, smc_listings, sc_listings, pg_listings]
 states = ['San Diego', 'Oakland', 'Los Angeles', 'San Francisco', 'Santa Clara County', 'San Mateo County', 'Santa Cruz County', 'Pacific Grove']
 
@@ -43,7 +44,7 @@ all_listings.head()
 
 # ### Drop some columns
 
-# In[3]:
+# In[4]:
 
 
 all_listings.info()
@@ -52,7 +53,7 @@ all_listings.info()
 # With a total of 75 columns, which is too many for a model, we had to remove columns. Initially, we
 # removed those columns which are not useful for predicting price (e.g. url, host-related features that are unrelated to the property, etc).
 
-# In[4]:
+# In[5]:
 
 
 all_listings.drop(['listing_url', 'scrape_id', 'last_scraped', 'source', 'picture_url', 'host_id', 
@@ -65,7 +66,7 @@ all_listings.drop(['listing_url', 'scrape_id', 'last_scraped', 'source', 'pictur
 
 # #### Remove columns with majority null values
 
-# In[5]:
+# In[6]:
 
 
 (all_listings.isna().sum() / all_listings.isna().count()) *100
@@ -75,7 +76,7 @@ all_listings.drop(['listing_url', 'scrape_id', 'last_scraped', 'source', 'pictur
 # 
 # However, we will keep neighborhood_overview to potentially get it's sentiment value.
 
-# In[6]:
+# In[7]:
 
 
 all_listings['license'].value_counts()
@@ -83,7 +84,7 @@ all_listings['license'].value_counts()
 
 # It can be that those who have a null value in the license column just don't have a license. Maybe we can try for a boolean category here.
 
-# In[7]:
+# In[8]:
 
 
 all_listings['has_license'] = all_listings['license'].notnull()*1
@@ -92,7 +93,7 @@ all_listings.drop("license", axis = 1, inplace= True)
 
 # Let's remove the rest
 
-# In[8]:
+# In[9]:
 
 
 all_listings.drop("neighbourhood", axis = 1, inplace= True)
@@ -102,7 +103,7 @@ all_listings.drop("bathrooms", axis = 1, inplace= True)
 
 # Remove columns that have 1 or 0 unique values
 
-# In[9]:
+# In[10]:
 
 
 # get number of unique values for each column
@@ -120,7 +121,7 @@ print(all_listings.shape)
 
 # There are multiple columns for minimum and maximum night stays which seem to have minimal differences. The default min/max night stay values will be used instead.
 
-# In[10]:
+# In[11]:
 
 
 all_listings.drop(['minimum_minimum_nights', 'maximum_minimum_nights', 'minimum_maximum_nights', 'maximum_maximum_nights', 'minimum_nights_avg_ntm', 'maximum_nights_avg_ntm'], axis=1, inplace=True)
@@ -128,7 +129,7 @@ all_listings.drop(['minimum_minimum_nights', 'maximum_minimum_nights', 'minimum_
 
 # ### Boolean columns
 
-# In[11]:
+# In[12]:
 
 
 # Replacing columns with f/t with 0/1
@@ -140,7 +141,7 @@ all_listings.hist(figsize=(20,20))
 
 # Drop those that have mostly just one category
 
-# In[12]:
+# In[13]:
 
 
 all_listings.drop(['has_availability', 'host_has_profile_pic','has_availability'], axis=1, inplace=True)
@@ -148,7 +149,7 @@ all_listings.drop(['has_availability', 'host_has_profile_pic','has_availability'
 
 # #### Name
 
-# In[13]:
+# In[14]:
 
 
 all_listings['name'].isna().sum()
@@ -156,7 +157,7 @@ all_listings['name'].isna().sum()
 
 # There's only 3 null values, we can just remove those rows.
 
-# In[14]:
+# In[15]:
 
 
 all_listings = all_listings[all_listings['name'].notna()]
@@ -164,7 +165,7 @@ all_listings = all_listings[all_listings['name'].notna()]
 
 # #### host response time
 
-# In[15]:
+# In[16]:
 
 
 print("Null values:", all_listings.host_response_time.isna().sum())
@@ -174,9 +175,9 @@ print(f"Proportion: {round((all_listings.host_response_time.isna().sum()/len(all
 len(all_listings[all_listings.loc[ :,['host_response_time', 'first_review'] ].isnull().sum(axis=1) == 2])
 
 
-# We'll fill the NA values wioth its own category
+# We'll fill the NA values wioth its own category since it's a signficant proportion of the data
 
-# In[16]:
+# In[17]:
 
 
 all_listings.host_response_time.fillna("NA", inplace=True)
@@ -185,14 +186,14 @@ all_listings.host_response_time.value_counts(normalize=True)
 
 # #### host response rate
 
-# In[17]:
+# In[18]:
 
 
 print("Null values:", all_listings.host_response_rate.isna().sum())
 print(f"Proportion: {round((all_listings.host_response_rate.isna().sum()/len(all_listings))*100, 1)}%")
 
 
-# In[18]:
+# In[19]:
 
 
 # Removing the % sign from the host_response_rate string and converting to an integer
@@ -203,47 +204,28 @@ print("Median host response rate:", all_listings['host_response_rate'].median())
 print(f"Proportion of 100% host response rates: {round(((all_listings.host_response_rate == 100.0).sum()/all_listings.host_response_rate.count())*100,1)}%")
 
 
-# In[19]:
-
-
-# # Bin into four categories
-# all_listings.host_response_rate = pd.cut(all_listings.host_response_rate, bins=[0, 50, 90, 99, 100], labels=['0-49%', '50-89%', '90-99%', '100%'], include_lowest=True)
-
-# # Converting to string
-# all_listings.host_response_rate = all_listings.host_response_rate.astype('str')
-
-# # Replace nulls with 'unknown'
-# all_listings.host_response_rate.replace('nan', 'NA', inplace=True)
-
-# # Category counts
-# all_listings.host_response_rate.value_counts()
-
-
 # In[20]:
 
 
 all_listings.host_response_rate.value_counts()
 
 
+# The distribution is right skewed, so we can create categories of this instead.
+
 # In[21]:
 
 
 bins = [0, 50, 70, 80, 90, 95, 101]
 response_rate_labels = ['unresponsive', 'somewhat unresponsive', 'somewhat responsive', 'responsive', 'very responsive', 'extremely responsive']
-# acceptance_rate_labels = ['very low', 'low', 'average', 'high', 'very high', 'extremely high']
 all_listings['host_response_rate'] = pd.cut(all_listings['host_response_rate'], bins=bins, labels=response_rate_labels, right=False)
-# all_listings['host_acceptance_rate'] = pd.cut(all_listings['host_acceptance_rate'], bins=bins, labels=acceptance_rate_labels, right=False)
 
 
 # In[22]:
 
 
 cat_dtype_response = CategoricalDtype(categories=response_rate_labels+['NA'])
-# cat_dtype_acceptance = CategoricalDtype(categories=acceptance_rate_labels+['NA'])
 all_listings['host_response_rate'] = all_listings['host_response_rate'].astype(cat_dtype_response)
-# all_listings['host_acceptance_rate'] = all_listings['host_acceptance_rate'].astype(cat_dtype_acceptance)
 all_listings['host_response_rate'] = all_listings['host_response_rate'].fillna('NA')
-# all_listings['host_acceptance_rate'] = all_listings['host_acceptance_rate'].fillna('NA')
 
 
 # #### Property Type
@@ -254,10 +236,10 @@ all_listings['host_response_rate'] = all_listings['host_response_rate'].fillna('
 all_listings.property_type.value_counts()
 
 
+# There's a lot of categories here which may cause problems in the model. We can group them into specific categories that roughly summarise each property_type. We can notice houses tend to use the term "Entire", while shared and private rooms are explicitly stated.
+
 # In[24]:
 
-
-# Replacing categories that are types of houses or rooms
 
 property_categorisation = {
     'Entire': 'House',
@@ -282,17 +264,17 @@ all_listings['property_type'] = all_listings['property_type'].apply(map_property
 all_listings['property_type'].value_counts()
 
 
-# We don't want prices that are NA or have no value, so we'll remove them.
-
 # ### Price
 
-# In[ ]:
+# The price column is formatting as a string with symbols. We'll fix that and remove NA and 0 values.
+
+# In[26]:
 
 
 all_listings["price"] = all_listings["price"].str[1:].str.replace(",","").astype("float")
 
 
-# In[29]:
+# In[27]:
 
 
 all_listings = all_listings[all_listings['price'].notna()] 
@@ -303,7 +285,7 @@ all_listings = all_listings[all_listings.price!=0]
 
 # It's better to have separate columns for the number of bathrooms and the type of bathroom
 
-# In[33]:
+# In[28]:
 
 
 all_listings["bathrooms"] = all_listings["bathrooms_text"].str.split(" ", expand=True)[0]
@@ -311,14 +293,16 @@ all_listings["bathroom_type"] = all_listings["bathrooms_text"].str.split(" ", ex
 all_listings.drop("bathrooms_text", axis = 1, inplace= True)
 
 
-# In[37]:
+# In[29]:
 
 
 all_listings['bathrooms'] = all_listings['bathrooms'].fillna('NA')
 all_listings['bathroom_type'] = all_listings['bathroom_type'].fillna('NA')
 
 
-# In[50]:
+# Bathrooms should ideally be a count. Some of them use terms to describe the bathroom, so we will map them to numbers.
+
+# In[30]:
 
 
 mapping = {'Private': '1', 'Shared': '1', 'Half-bath': '1', 'NA': '1'}
@@ -330,7 +314,9 @@ all_listings['bathrooms'] = all_listings['bathrooms'].astype('str').astype('floa
 
 # ### Bedrooms & Beds
 
-# In[34]:
+# There's a portion of null values for bedrooms and beds. We will derive a quick linear regression model to estimate the missing values
+
+# In[31]:
 
 
 from sklearn.linear_model import LinearRegression
@@ -345,7 +331,7 @@ bedroom_pred = bedrooms_model.predict(accommodates)
 mean_squared_error(bedrooms, bedroom_pred)
 
 
-# In[35]:
+# In[32]:
 
 
 bed_not_na = all_listings[all_listings['beds'].notna()]
@@ -357,7 +343,9 @@ bedroom_pred = beds_model.predict(accommodates)
 mean_squared_error(beds, bedroom_pred)
 
 
-# In[36]:
+# The MSE for both are relatively low, so we can use these models to fill up null values
+
+# In[33]:
 
 
 import math
@@ -374,7 +362,13 @@ for index, row in all_listings.iterrows():
 
 # ### Amenities
 
-# In[39]:
+# This column has a list of amenities which are free text for users (so it will be a problem when using it for a model). 
+# 
+# The first approach is to simply take a count of the amenities, as we can assume more amenities provided translates to a higher price. 
+# 
+# Another way would be to group the amenities into specific groups based on certain keywords.
+
+# In[34]:
 
 
 import ast
@@ -388,7 +382,7 @@ fig, ax = plt.subplots(figsize=(12, 6))
 hp = sns.histplot(all_listings['num_of_amenities'], bins=25)
 
 
-# In[40]:
+# In[35]:
 
 
 import ast
@@ -431,7 +425,7 @@ for i in range(all_listings.shape[0]):
 
 # There are multiple different measures of availability, which will be highly correlated with each other. Only one will be retained - for 30 days.
 
-# In[41]:
+# In[36]:
 
 
 all_listings.drop(['availability_60', 'availability_90', 'availability_365'], axis=1, inplace=True)
@@ -439,7 +433,9 @@ all_listings.drop(['availability_60', 'availability_90', 'availability_365'], ax
 
 # ### Gender Split
 
-# In[42]:
+# It would be interesting to see if the gender of the host affects the price
+
+# In[37]:
 
 
 import gender_guesser.detector as gender
@@ -454,7 +450,7 @@ all_listings = all_listings.replace({'host_gender': gender_mapping})
 
 # ### Review Scores
 
-# In[43]:
+# In[38]:
 
 
 review_missing = all_listings[all_listings['review_scores_rating'].isna()]
@@ -462,7 +458,7 @@ reviews_columns = ['review_scores_rating', 'review_scores_accuracy', 'review_sco
 review_missing[reviews_columns].isnull().sum()
 
 
-# In[44]:
+# In[39]:
 
 
 from pandas.api.types import CategoricalDtype
@@ -492,7 +488,7 @@ all_listings['review_scores_rating'] = all_listings['review_scores_rating'].asty
 all_listings['review_scores_rating'] = all_listings['review_scores_rating'].fillna(value='NA')
 
 
-# In[47]:
+# In[40]:
 
 
 all_listings.drop(['review_scores_accuracy', 'review_scores_cleanliness', 'review_scores_checkin', 'review_scores_communication', 'review_scores_location', 'review_scores_value'], axis=1, inplace=True)
@@ -500,7 +496,7 @@ all_listings.drop(['review_scores_accuracy', 'review_scores_cleanliness', 'revie
 
 # ### Description Sentiment
 
-# In[45]:
+# In[41]:
 
 
 from textblob import TextBlob
@@ -521,51 +517,66 @@ all_listings['description_sentiment'] = pd.cut(all_listings['description_sentime
 all_listings['neighborhood_overview_sentiment'] = pd.cut(all_listings['neighborhood_overview_sentiment'], bins, labels=labels, right=False)
 
 
-# #### Reviews Sentiment
+# ### Reviews Sentiment
 
-# In[1]:
+# In[43]:
 
 
-reviews = pd.read_csv("/Data/Reviews_w_sentiment.csv")
+reviews = pd.read_csv("./Data/Reviews_w_sentiment.csv")
 reviews.head()
 
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# ### Final check on columns
-
-# In[58]:
-
-
-all_listings.info()
-
-
-# Removing columns that are repeated or have been processed
 
 # In[52]:
 
 
-all_listings.drop(['reviews_per_month', 'first_review', 'last_review', 'number_of_reviews_ltm', 'number_of_reviews_l30d', 'host_name','index','host_acceptance_rate'], axis=1, inplace=True)
+reviews.isna().sum()
 
 
-# In[60]:
+# In[44]:
 
 
-all_listings.to_csv('cleaned_full_data.csv')
+df = pd.merge(all_listings, reviews, left_on="id", right_on="listing_id", how="left")
+df.shape
 
 
-# In[ ]:
+# In[49]:
 
 
+df['sentiment_mean_score'].isna().sum()
 
 
+# In[53]:
+
+
+df['sentiment_median_score'].isna().sum()
+
+
+# Since there's a couple of NA values, it means that certain listings don't have reviews or is not a part of the reviews dataset in airbnb. To counter this, we will fill NA values with a neutral sentiment.
+
+# In[54]:
+
+
+df['sentiment_mean_score'] = df['sentiment_mean_score'].fillna(0.0)
+df['sentiment_median_score'] = df['sentiment_median_score'].fillna(0.0)
+
+
+# ### Final check on columns
+
+# In[56]:
+
+
+df.info()
+
+
+# Removing columns that are repeated or have been processed
+
+# In[57]:
+
+
+df.drop(['index','id','reviews_per_month', 'first_review', 'last_review', 'number_of_reviews_ltm', 'number_of_reviews_l30d', 'host_name','index','host_acceptance_rate'], axis=1, inplace=True)
+
+
+# In[58]:
+
+
+df.to_csv('cleaned_full_data.csv', index=False)
