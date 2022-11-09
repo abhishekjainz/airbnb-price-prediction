@@ -1,0 +1,16 @@
+num_mall_within_500: Number of mall within 500m radius of the listing.
+num_mall_within_1000: Number of mall within 1000m radius of the listing.
+num_mall_within_1500: Number of mall within 1500m radius of the listing.
+num_mall_within_2000: Number of mall within 2000m radius of the listing.
+num_attraction_within_500: Number of attraction within 500m radius of the listing.
+num_attraction_within_1000: Number of attraction within 1000m radius of the listing.
+num_attraction_within_1500: Number of attraction within 1500m radius of the listing.
+num_attraction_within_2000: Number of attraction within 2000m radius of the listing.
+mall_within_500: 1 if there is at least 1 mall within 500m radius of the listing. Otherwise, 0.
+mall_within_1000: 1 if there is at least 1 mall within 1000m radius of the listing. Otherwise, 0.
+mall_within_1500: 1 if there is at least 1 mall within 1500m radius of the listing. Otherwise, 0.
+mall_within_2000: 1 if there is at least 1 mall within 2000m radius of the listing. Otherwise, 0.
+attraction_within_500: 1 if there is at least 1 attraction within 500m radius of the listing. Otherwise, 0.
+attraction_within_1000: 1 if there is at least 1 attraction within 1000m radius of the listing. Otherwise, 0.
+attraction_within_1500: 1 if there is at least 1 attraction within 1500m radius of the listing. Otherwise, 0.
+attraction_within_2000: 1 if there is at least 1 attraction within 2000m radius of the listing. Otherwise, 0.
